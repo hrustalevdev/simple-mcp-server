@@ -83,6 +83,8 @@ Full config examples for all clients: `README.md` → "Интеграция с �
 
 Example file for Claude Code: `.claude/settings.json.docker-example`
 
+> **Claude Code note:** if the project-level `.claude/settings.json` is not picked up, add the config to the global `~/.claude/settings.json` instead. Also start a **new conversation** after adding the config — MCP servers are registered at conversation start, not mid-session.
+
 ## Environment Variables
 
 | Variable | Default | Description |

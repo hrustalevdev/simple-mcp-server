@@ -236,7 +236,8 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 
 | Клиент | Конфиг-файл | Ключ |
 |---|---|---|
-| Claude Code | `.claude/settings.json` | `mcpServers` |
+| Claude Code (глобально) | `~/.claude/settings.json` | `mcpServers` |
+| Claude Code (проект) | `.claude/settings.json` | `mcpServers` |
 | Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `mcpServers` |
 | VS Code (Copilot, 1.99+) | `.vscode/mcp.json` | `servers` + `"type":"stdio"` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` |
@@ -263,7 +264,9 @@ VS Code отличается: ключ `"servers"` и обязательное `
 1. `docker build -t project-navigator-mcp .`
 2. Smoke test: `echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | docker run --rm -i project-navigator-mcp`
 3. Добавить конфиг в файл настроек используемого клиента
-4. Перезапустить клиент — сервер появится в списке MCP
+4. Перезапустить клиент и начать **новый разговор** — сервер появится в списке MCP
 5. Проверить: спросить агента «покажи структуру папки src»
+
+> **Claude Code:** если конфиг на уровне проекта не подхватывается, добавьте его в глобальный `~/.claude/settings.json`.
 
 Полные примеры конфигов для всех клиентов: `README.md` → раздел «Интеграция с агентами и IDE».
