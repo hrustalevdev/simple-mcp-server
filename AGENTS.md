@@ -12,21 +12,41 @@ An MCP server that gives AI agents in an IDE the ability to navigate a local cod
 
 ## Project Structure
 
+Each module lives in its own folder with `index.ts` (source) and `index.test.ts` (tests).
+
 ```
 src/
-  index.ts        ← entry point only (bootstrap)
-  server.ts       ← McpServer setup and tool registration
-  logger.ts       ← stderr logger (logCall / logSuccess / logError)
+  index.ts              ← entry point only (bootstrap)
+  server.ts             ← McpServer setup and tool registration
+  logger/
+    index.ts            ← stderr logger (logCall / logSuccess / logError)
+    index.test.ts
+  security/
+    index.ts            ← assertInProjectRoot — path traversal guard
+    index.test.ts
   tools/
-    list-directory.ts
-    read-file.ts
-    find-files.ts
-    search-code.ts
-    run-command.ts
+    list-directory/
+      index.ts
+      index.test.ts
+    read-file/
+      index.ts
+      index.test.ts
+    find-files/
+      index.ts
+      index.test.ts
+    search-code/
+      index.ts
+      index.test.ts
+    run-command/
+      index.ts
+      index.test.ts
 docs/
   hw.md           ← homework assignment
   design.md       ← approved design spec
+  plan.md         ← implementation plan
 ```
+
+**Import paths:** NodeNext module resolution requires explicit `index.js` in imports — e.g. `import { logCall } from "../logger/index.js"` (not `"../logger.js"`).
 
 ## Build & Run
 
