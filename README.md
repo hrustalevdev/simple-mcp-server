@@ -41,6 +41,26 @@ IDE запускает MCP-сервер как дочерний процесс �
 
 Ошибки возвращаются через стандартный MCP error response.
 
+## Структура проекта
+
+```
+src/
+  index.ts              ← bootstrap (env → startServer)
+  server.ts             ← McpServer, регистрация инструментов
+  logger/
+    index.ts            ← logCall / logSuccess / logError → stderr
+    index.test.ts
+  security/
+    index.ts            ← assertInProjectRoot (path traversal guard)
+    index.test.ts
+  tools/
+    list-directory/index.ts + index.test.ts
+    read-file/index.ts + index.test.ts
+    find-files/index.ts + index.test.ts
+    search-code/index.ts + index.test.ts
+    run-command/index.ts + index.test.ts
+```
+
 ## Установка и запуск
 
 ```bash

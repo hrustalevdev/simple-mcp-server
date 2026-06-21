@@ -13,3 +13,4 @@ yarn-error.log*
 /.veai/
 /.claude/settings.local.json
 /dist/
+/.claude/
