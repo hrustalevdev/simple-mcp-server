@@ -24,7 +24,7 @@ export async function startServer(
   registerReadFileTool(server, projectRoot);
   registerFindFilesTool(server, projectRoot);
   registerSearchCodeTool(server, projectRoot);
-  registerRunCommandTool(server, allowedCommands);
+  registerRunCommandTool(server, allowedCommands, projectRoot);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

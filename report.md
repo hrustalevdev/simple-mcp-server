@@ -16,7 +16,7 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 
 **Файл:** `src/server.ts:L1–L34`
 
-Функция `startServer(projectRoot, allowedCommands)` (L17–L33):
+Функция `startServer(projectRoot, allowedCommands)` (L17–L34):
 1. Создаёт `McpServer` с именем `"project-navigator"` (L21)
 2. Регистрирует 5 инструментов (L23–L27)
 3. Подключает `StdioServerTransport` (L29–L30)
@@ -62,9 +62,9 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 
 ### `find_files`
 
-**Реализация:** `src/tools/find-files/index.ts:L9–L15`
-**Регистрация в MCP:** `src/tools/find-files/index.ts:L17–L48`
-**Логи:** `src/tools/find-files/index.ts:L24,L31,L35`
+**Реализация:** `src/tools/find-files/index.ts:L8–L21`
+**Регистрация в MCP:** `src/tools/find-files/index.ts:L23–L56`
+**Логи:** `src/tools/find-files/index.ts:L41,L47,L51`
 
 Принимает glob-паттерн (`**/*.ts`) и возвращает список файлов относительно `PROJECT_ROOT`.
 
@@ -94,9 +94,9 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 
 ### `run_command`
 
-**Реализация:** `src/tools/run-command/index.ts:L6–L25`
-**Регистрация в MCP:** `src/tools/run-command/index.ts:L27–L53`
-**Логи:** `src/tools/run-command/index.ts:L34,L40,L44`
+**Реализация:** `src/tools/run-command/index.ts:L6–L27`
+**Регистрация в MCP:** `src/tools/run-command/index.ts:L29–L58`
+**Логи:** `src/tools/run-command/index.ts:L46,L49,L53`
 
 Запускает команду из whitelist через `spawn` (без shell). Возвращает `{ stdout, stderr, exit_code, success }`.
 
@@ -242,31 +242,26 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 | VS Code (Copilot, 1.99+) | `.vscode/mcp.json` | `servers` + `"type":"stdio"` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` |
 
-Пример для Claude Code (Docker):
+Пример для Claude Code — конфиг копируется один раз, путь к проекту указывать не нужно:
 
 ```json
 {
   "mcpServers": {
     "project-navigator": {
-      "command": "docker",
-      "args": ["run", "--rm", "-i",
-               "-v", "/path/to/project:/project:ro",
-               "-e", "PROJECT_ROOT=/project",
-               "project-navigator-mcp"]
+      "command": "sh",
+      "args": ["-c", "docker run --rm -i -v \"$(pwd):/project:ro\" -e PROJECT_ROOT=/project project-navigator-mcp"]
     }
   }
 }
 ```
 
-VS Code отличается: ключ `"servers"` и обязательное `"type": "stdio"`. У остальных клиентов формат идентичен.
+`$(pwd)` автоматически подставляет директорию, из которой запущен Claude Code. VS Code отличается: ключ `"servers"` и обязательное `"type": "stdio"`. У остальных клиентов формат аналогичен, но с явным путём к проекту.
 
 **Шаги для запуска:**
 1. `docker build -t project-navigator-mcp .`
 2. Smoke test: `echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | docker run --rm -i project-navigator-mcp`
-3. Добавить конфиг в файл настроек используемого клиента
-4. Перезапустить клиент и начать **новый разговор** — сервер появится в списке MCP
+3. Добавить конфиг в глобальный `~/.claude/settings.json`
+4. `cd /любой/проект && claude` — начать новый разговор
 5. Проверить: спросить агента «покажи структуру папки src»
-
-> **Claude Code:** если конфиг на уровне проекта не подхватывается, добавьте его в глобальный `~/.claude/settings.json`.
 
 Полные примеры конфигов для всех клиентов: `README.md` → раздел «Интеграция с агентами и IDE».

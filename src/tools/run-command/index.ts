@@ -5,14 +5,15 @@ import { logCall, logSuccess, logError } from "../../logger/index.js";
 
 export function runCommand(
   command: string,
-  allowedCommands: string[]
+  allowedCommands: string[],
+  cwd: string
 ): Promise<{ stdout: string; stderr: string; exit_code: number; success: boolean }> {
   if (!allowedCommands.includes(command.trim())) {
     return Promise.reject(new Error("command not in whitelist"));
   }
   const [bin, ...args] = command.trim().split(/\s+/);
   return new Promise((resolve, reject) => {
-    const proc = spawn(bin, args, { shell: false });
+    const proc = spawn(bin, args, { shell: false, cwd });
     let stdout = "";
     let stderr = "";
     proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
@@ -27,7 +28,8 @@ export function runCommand(
 
 export function registerRunCommandTool(
   server: McpServer,
-  allowedCommands: string[]
+  allowedCommands: string[],
+  projectRoot: string
 ): void {
   server.registerTool(
     "run_command",
@@ -43,7 +45,7 @@ export function registerRunCommandTool(
       const start = Date.now();
       logCall("run_command", { command });
       try {
-        const result = await runCommand(command, allowedCommands);
+        const result = await runCommand(command, allowedCommands, projectRoot);
         logSuccess("run_command", Date.now() - start);
         return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
       } catch (err) {

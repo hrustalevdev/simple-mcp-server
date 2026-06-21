@@ -77,6 +77,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
 
 Ожидаемый результат — JSON с 5 инструментами: `list_directory`, `read_file`, `find_files`, `search_code`, `run_command`.
 
+> **Ограничение `run_command` в Docker:** инструмент запускает команды в директории `PROJECT_ROOT`. Если `node_modules` целевого проекта установлен на другой ОС (например, macOS), нативные биндинги (`rolldown`, `esbuild` и т.п.) не будут работать внутри Linux-контейнера. В этом случае `npm test` упадёт с ошибкой о нативном модуле — это ограничение окружения, не сервера. Для запуска тестов используйте Node.js-вариант (без Docker) или предварительно выполните `npm install` в целевом проекте внутри контейнера.
+
 ## Интеграция с агентами и IDE
 
 MCP — открытый протокол. Сервер работает с любым MCP-совместимым клиентом; меняется только путь к конфиг-файлу и название ключа.
@@ -89,35 +91,33 @@ MCP — открытый протокол. Сервер работает с лю
 
 ### Claude Code
 
-Есть два уровня конфигурации:
-
-**Глобальный** (`~/.claude/settings.json`) — сервер доступен во всех проектах. Рекомендуется, если вы подключаете сервер для проверки/знакомства:
+Добавьте один раз в глобальный `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
     "project-navigator": {
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
-        "-e", "PROJECT_ROOT=/project",
-        "project-navigator-mcp"
-      ]
+      "command": "sh",
+      "args": ["-c", "docker run --rm -i -v \"$(pwd):/project:ro\" -e PROJECT_ROOT=/project project-navigator-mcp"]
     }
   }
 }
 ```
 
-**Уровень проекта** (`.claude/settings.json` в папке проекта) — сервер активен только когда Claude Code открыт в этой папке.
+`$(pwd)` автоматически подставляет директорию, из которой запущен Claude Code — **путь к проекту указывать не нужно**. Просто откройте любой проект и начните новый разговор:
 
-> **Важно:** если конфиг добавлен на уровне проекта, но сервер не появляется — добавьте его в глобальный `~/.claude/settings.json`. На практике глобальный конфиг подхватывается надёжнее.
+```bash
+cd /any/project
+claude
+```
 
-Перезапустите Claude Code и начните **новый разговор** — сервер появится в списке MCP.
+> **Важно:** если конфиг добавлен на уровне проекта (`.claude/settings.json`), но сервер не появляется — добавьте его в глобальный `~/.claude/settings.json`. Также убедитесь, что начали **новый разговор** — MCP-серверы регистрируются при старте сессии.
 
 ---
 
 ### Claude Desktop
+
+Claude Desktop не привязан к директории проекта, поэтому путь нужно указать явно.
 
 Файл:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -127,19 +127,14 @@ MCP — открытый протокол. Сервер работает с лю
 {
   "mcpServers": {
     "project-navigator": {
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
-        "-e", "PROJECT_ROOT=/project",
-        "project-navigator-mcp"
-      ]
+      "command": "sh",
+      "args": ["-c", "docker run --rm -i -v \"/ABSOLUTE/PATH/TO/PROJECT:/project:ro\" -e PROJECT_ROOT=/project project-navigator-mcp"]
     }
   }
 }
 ```
 
-Перезапустите Claude Desktop.
+Замените `/ABSOLUTE/PATH/TO/PROJECT` на путь к нужному проекту. Перезапустите Claude Desktop.
 
 ---
 
@@ -147,28 +142,26 @@ MCP — открытый протокол. Сервер работает с лю
 
 Требует VS Code 1.99+ с GitHub Copilot.
 
-Файл: `.vscode/mcp.json` в целевом проекте
+Файл: `.vscode/mcp.json` в целевом проекте (добавьте в репозиторий — будет работать у всех участников).
 
 ```json
 {
   "servers": {
     "project-navigator": {
       "type": "stdio",
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
-        "-e", "PROJECT_ROOT=/project",
-        "project-navigator-mcp"
-      ]
+      "command": "sh",
+      "cwd": "${workspaceFolder}",
+      "args": ["-c", "docker run --rm -i -v \"$(pwd):/project:ro\" -e PROJECT_ROOT=/project project-navigator-mcp"]
     }
   }
 }
 ```
 
+`${workspaceFolder}` — встроенная переменная VS Code, автоматически подставляет корень открытого проекта. Путь указывать не нужно.
+
 Откройте Copilot Chat → переключитесь в режим **Agent** → сервер подключится автоматически.
 
-> Отличие от других клиентов: ключ `"servers"` (не `"mcpServers"`) и обязательное поле `"type": "stdio"`.
+> Отличие от других клиентов: ключ `"servers"` (не `"mcpServers"`), обязательное `"type": "stdio"` и поддержка `"cwd"` с переменными.
 
 ---
 
@@ -180,19 +173,14 @@ MCP — открытый протокол. Сервер работает с лю
 {
   "mcpServers": {
     "project-navigator": {
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
-        "-e", "PROJECT_ROOT=/project",
-        "project-navigator-mcp"
-      ]
+      "command": "sh",
+      "args": ["-c", "docker run --rm -i -v \"$(pwd):/project:ro\" -e PROJECT_ROOT=/project project-navigator-mcp"]
     }
   }
 }
 ```
 
-Перезапустите Cursor. Инструменты появятся в Cursor Agent.
+Cursor запускает MCP-сервер с cwd = корень открытого проекта, поэтому `$(pwd)` подставляется автоматически. Перезапустите Cursor — инструменты появятся в Cursor Agent.
 
 ---
 

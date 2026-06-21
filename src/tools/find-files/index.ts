@@ -10,7 +10,12 @@ export async function findFiles(
   resolvedDir: string,
   projectRoot: string
 ): Promise<{ files: string[]; count: number }> {
-  const matches = await glob(pattern, { cwd: resolvedDir, nodir: true, dot: false });
+  const matches = await glob(pattern, {
+    cwd: resolvedDir,
+    nodir: true,
+    dot: false,
+    ignore: ["**/node_modules/**", "**/dist/**"],
+  });
   const files = matches.map((f) => relative(projectRoot, join(resolvedDir, f)));
   return { files, count: files.length };
 }
