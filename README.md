@@ -61,14 +61,64 @@ src/
     run-command/index.ts + index.test.ts
 ```
 
-## Установка и запуск
+## Запуск через Docker (рекомендуется)
+
+Node.js на машине не нужен.
+
+```bash
+docker build -t project-navigator-mcp .
+```
+
+Проверка (smoke test):
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+  | docker run --rm -i project-navigator-mcp
+```
+
+Ожидаемый результат — JSON с 5 инструментами: `list_directory`, `read_file`, `find_files`, `search_code`, `run_command`.
+
+### Интеграция с Claude Code (Docker)
+
+Добавьте в `.claude/settings.json` проекта, который хотите исследовать:
+
+```json
+{
+  "mcpServers": {
+    "project-navigator": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "/ABSOLUTE/PATH/TO/TARGET/PROJECT:/project:ro",
+        "-e", "PROJECT_ROOT=/project",
+        "project-navigator-mcp"
+      ]
+    }
+  }
+}
+```
+
+**Шаги:**
+1. Клонируйте репозиторий
+2. `docker build -t project-navigator-mcp .`
+3. Скопируйте конфиг выше в `.claude/settings.json` целевого проекта
+4. Замените `/ABSOLUTE/PATH/TO/TARGET/PROJECT` на абсолютный путь к проекту
+5. Перезапустите Claude Code — сервер появится в списке MCP
+
+---
+
+## Запуск без Docker
 
 ```bash
 npm install
 npm run build
 ```
 
-## Настройка
+Проверка:
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node dist/index.js
+```
+
+### Настройка
 
 Создайте `.env` (по образцу `.env.example`):
 
@@ -77,7 +127,7 @@ PROJECT_ROOT=/path/to/your/project
 ALLOWED_COMMANDS=npm run build,npm test,npm run lint,npm run dev,npx tsc --noEmit
 ```
 
-## Интеграция с Claude Code
+### Интеграция с Claude Code (Node.js)
 
 Добавьте в `.claude/settings.json`:
 
@@ -95,10 +145,10 @@ ALLOWED_COMMANDS=npm run build,npm test,npm run lint,npm run dev,npx tsc --noEmi
 }
 ```
 
-**Шаги для включения:**
+**Шаги:**
 1. Клонируйте репозиторий
-2. Выполните `npm install && npm run build`
-3. Скопируйте конфиг выше в `.claude/settings.json` вашего проекта
+2. `npm install && npm run build`
+3. Скопируйте конфиг выше в `.claude/settings.json` целевого проекта
 4. Укажите абсолютные пути в `args` и `PROJECT_ROOT`
 5. Перезапустите Claude Code — сервер появится в списке MCP
 

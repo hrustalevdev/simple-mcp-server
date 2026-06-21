@@ -50,13 +50,40 @@ docs/
 
 ## Build & Run
 
+**Docker (recommended — no Node.js required):**
+```bash
+docker build -t project-navigator-mcp .
+# smoke test:
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | docker run --rm -i project-navigator-mcp
+```
+
+**Node.js directly:**
 ```bash
 npm install
-npm run build      # compiles TypeScript to dist/
-node dist/index.js # starts the MCP server
+npm run build
+node dist/index.js
 ```
 
 The server speaks MCP over stdio — it is not a web server. Run it via IDE config, not directly.
+
+## Docker & IDE integration
+
+`.claude/settings.json` for Docker:
+```json
+{
+  "mcpServers": {
+    "project-navigator": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i",
+               "-v", "/path/to/project:/project:ro",
+               "-e", "PROJECT_ROOT=/project",
+               "project-navigator-mcp"]
+    }
+  }
+}
+```
+
+Example: `.claude/settings.json.docker-example`
 
 ## Environment Variables
 

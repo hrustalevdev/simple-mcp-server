@@ -248,9 +248,15 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 }
 ```
 
-**Шаги для запуска:**
-1. `npm install`
-2. `npm run build`
-3. Убедиться что `.claude/settings.json` содержит правильные пути
-4. Перезапустить Claude Code — сервер `project-navigator` появится в списке MCP
-5. Проверить: спросить агента «покажи структуру папки src»
+**Шаги для запуска (Docker):**
+1. `docker build -t project-navigator-mcp .`
+2. Smoke test: `echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | docker run --rm -i project-navigator-mcp`
+3. Скопировать `.claude/settings.json.docker-example` в `.claude/settings.json` целевого проекта
+4. Заменить `/ABSOLUTE/PATH/TO/TARGET/PROJECT` на реальный путь
+5. Перезапустить Claude Code — сервер появится в списке MCP
+6. Проверить: спросить агента «покажи структуру папки src»
+
+**Шаги для запуска (Node.js):**
+1. `npm install && npm run build`
+2. Настроить `.claude/settings.json` с путём к `dist/index.js`
+3. Перезапустить Claude Code
