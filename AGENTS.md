@@ -66,24 +66,22 @@ node dist/index.js
 
 The server speaks MCP over stdio — it is not a web server. Run it via IDE config, not directly.
 
-## Docker & IDE integration
+## IDE & agent integration
 
-`.claude/settings.json` for Docker:
-```json
-{
-  "mcpServers": {
-    "project-navigator": {
-      "command": "docker",
-      "args": ["run", "--rm", "-i",
-               "-v", "/path/to/project:/project:ro",
-               "-e", "PROJECT_ROOT=/project",
-               "project-navigator-mcp"]
-    }
-  }
-}
-```
+The server uses stdio transport and works with any MCP-compatible client. Config key and file path differ per client:
 
-Example: `.claude/settings.json.docker-example`
+| Client | Config file | Key |
+|---|---|---|
+| Claude Code | `.claude/settings.json` | `mcpServers` |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `mcpServers` |
+| VS Code (Copilot 1.99+) | `.vscode/mcp.json` | `servers` + `"type":"stdio"` |
+| Cursor | `~/.cursor/mcp.json` | `mcpServers` |
+
+Docker args are the same across all clients. VS Code is the exception: it uses `"servers"` (not `"mcpServers"`) and requires `"type": "stdio"`.
+
+Full config examples for all clients: `README.md` → "Интеграция с агентами и IDE".
+
+Example file for Claude Code: `.claude/settings.json.docker-example`
 
 ## Environment Variables
 

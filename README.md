@@ -77,9 +77,19 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
 
 Ожидаемый результат — JSON с 5 инструментами: `list_directory`, `read_file`, `find_files`, `search_code`, `run_command`.
 
-### Интеграция с Claude Code (Docker)
+## Интеграция с агентами и IDE
 
-Добавьте в `.claude/settings.json` проекта, который хотите исследовать:
+MCP — открытый протокол. Сервер работает с любым MCP-совместимым клиентом; меняется только путь к конфиг-файлу и название ключа.
+
+Во всех примерах замените `/ABSOLUTE/PATH/TO/PROJECT` на абсолютный путь к проекту, который хотите исследовать.
+
+> **Без Docker:** замените блок `"command": "docker", "args": ["run", ...]` на `"command": "node", "args": ["/path/to/simple-mcp-server/dist/index.js"]` и добавьте `"env": { "PROJECT_ROOT": "/path/to/project" }`.
+
+---
+
+### Claude Code
+
+Файл: `.claude/settings.json` в целевом проекте
 
 ```json
 {
@@ -88,7 +98,7 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
       "command": "docker",
       "args": [
         "run", "--rm", "-i",
-        "-v", "/ABSOLUTE/PATH/TO/TARGET/PROJECT:/project:ro",
+        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
         "-e", "PROJECT_ROOT=/project",
         "project-navigator-mcp"
       ]
@@ -97,12 +107,86 @@ echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
 }
 ```
 
-**Шаги:**
-1. Клонируйте репозиторий
-2. `docker build -t project-navigator-mcp .`
-3. Скопируйте конфиг выше в `.claude/settings.json` целевого проекта
-4. Замените `/ABSOLUTE/PATH/TO/TARGET/PROJECT` на абсолютный путь к проекту
-5. Перезапустите Claude Code — сервер появится в списке MCP
+Перезапустите Claude Code — сервер появится в списке MCP.
+
+---
+
+### Claude Desktop
+
+Файл:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "project-navigator": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
+        "-e", "PROJECT_ROOT=/project",
+        "project-navigator-mcp"
+      ]
+    }
+  }
+}
+```
+
+Перезапустите Claude Desktop.
+
+---
+
+### VS Code (GitHub Copilot Agent Mode)
+
+Требует VS Code 1.99+ с GitHub Copilot.
+
+Файл: `.vscode/mcp.json` в целевом проекте
+
+```json
+{
+  "servers": {
+    "project-navigator": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
+        "-e", "PROJECT_ROOT=/project",
+        "project-navigator-mcp"
+      ]
+    }
+  }
+}
+```
+
+Откройте Copilot Chat → переключитесь в режим **Agent** → сервер подключится автоматически.
+
+> Отличие от других клиентов: ключ `"servers"` (не `"mcpServers"`) и обязательное поле `"type": "stdio"`.
+
+---
+
+### Cursor
+
+Файл: `~/.cursor/mcp.json` (глобально) или `.cursor/mcp.json` (в проекте)
+
+```json
+{
+  "mcpServers": {
+    "project-navigator": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "/ABSOLUTE/PATH/TO/PROJECT:/project:ro",
+        "-e", "PROJECT_ROOT=/project",
+        "project-navigator-mcp"
+      ]
+    }
+  }
+}
+```
+
+Перезапустите Cursor. Инструменты появятся в Cursor Agent.
 
 ---
 
@@ -118,39 +202,12 @@ npm run build
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | node dist/index.js
 ```
 
-### Настройка
-
 Создайте `.env` (по образцу `.env.example`):
 
 ```env
 PROJECT_ROOT=/path/to/your/project
 ALLOWED_COMMANDS=npm run build,npm test,npm run lint,npm run dev,npx tsc --noEmit
 ```
-
-### Интеграция с Claude Code (Node.js)
-
-Добавьте в `.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "project-navigator": {
-      "command": "node",
-      "args": ["/absolute/path/to/simple-mcp-server/dist/index.js"],
-      "env": {
-        "PROJECT_ROOT": "/path/to/your/project"
-      }
-    }
-  }
-}
-```
-
-**Шаги:**
-1. Клонируйте репозиторий
-2. `npm install && npm run build`
-3. Скопируйте конфиг выше в `.claude/settings.json` целевого проекта
-4. Укажите абсолютные пути в `args` и `PROJECT_ROOT`
-5. Перезапустите Claude Code — сервер появится в списке MCP
 
 ## Безопасность
 

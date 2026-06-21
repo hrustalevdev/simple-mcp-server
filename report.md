@@ -230,33 +230,40 @@ MCP (Model Context Protocol) — протокол, позволяющий AI-а�
 
 ---
 
-## Интеграция с IDE
+## Интеграция с IDE и агентами
 
-Конфигурация: `.claude/settings.json`
+Сервер реализует открытый протокол MCP поверх stdio — он совместим с любым MCP-клиентом. Меняется только путь к конфиг-файлу и название ключа.
+
+| Клиент | Конфиг-файл | Ключ |
+|---|---|---|
+| Claude Code | `.claude/settings.json` | `mcpServers` |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | `mcpServers` |
+| VS Code (Copilot, 1.99+) | `.vscode/mcp.json` | `servers` + `"type":"stdio"` |
+| Cursor | `~/.cursor/mcp.json` | `mcpServers` |
+
+Пример для Claude Code (Docker):
 
 ```json
 {
   "mcpServers": {
     "project-navigator": {
-      "command": "node",
-      "args": ["/Users/timur.khrustalyov/projects/_study/otus/simple-mcp-server/dist/index.js"],
-      "env": {
-        "PROJECT_ROOT": "/Users/timur.khrustalyov/projects/_study/otus/simple-mcp-server"
-      }
+      "command": "docker",
+      "args": ["run", "--rm", "-i",
+               "-v", "/path/to/project:/project:ro",
+               "-e", "PROJECT_ROOT=/project",
+               "project-navigator-mcp"]
     }
   }
 }
 ```
 
-**Шаги для запуска (Docker):**
+VS Code отличается: ключ `"servers"` и обязательное `"type": "stdio"`. У остальных клиентов формат идентичен.
+
+**Шаги для запуска:**
 1. `docker build -t project-navigator-mcp .`
 2. Smoke test: `echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | docker run --rm -i project-navigator-mcp`
-3. Скопировать `.claude/settings.json.docker-example` в `.claude/settings.json` целевого проекта
-4. Заменить `/ABSOLUTE/PATH/TO/TARGET/PROJECT` на реальный путь
-5. Перезапустить Claude Code — сервер появится в списке MCP
-6. Проверить: спросить агента «покажи структуру папки src»
+3. Добавить конфиг в файл настроек используемого клиента
+4. Перезапустить клиент — сервер появится в списке MCP
+5. Проверить: спросить агента «покажи структуру папки src»
 
-**Шаги для запуска (Node.js):**
-1. `npm install && npm run build`
-2. Настроить `.claude/settings.json` с путём к `dist/index.js`
-3. Перезапустить Claude Code
+Полные примеры конфигов для всех клиентов: `README.md` → раздел «Интеграция с агентами и IDE».
