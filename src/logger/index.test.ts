@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { logCall, logSuccess, logError } from "./logger.js";
+import { logCall, logSuccess, logError } from "./index.js";
 
 describe("logger", () => {
   it("logCall writes [CALL] line to stderr", () => {

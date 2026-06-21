@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { searchCode } from "./search-code.js";
+import { searchCode } from "./index.js";
 import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";

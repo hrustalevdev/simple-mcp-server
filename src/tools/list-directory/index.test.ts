@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { listDirectory } from "./list-directory.js";
+import { listDirectory } from "./index.js";
 import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";

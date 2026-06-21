@@ -2,8 +2,8 @@ import { readFile as fsReadFile } from "fs/promises";
 import { basename } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { assertInProjectRoot } from "../security.js";
-import { logCall, logSuccess, logError } from "../logger.js";
+import { assertInProjectRoot } from "../../security/index.js";
+import { logCall, logSuccess, logError } from "../../logger/index.js";
 
 export async function readFile(
   path: string,

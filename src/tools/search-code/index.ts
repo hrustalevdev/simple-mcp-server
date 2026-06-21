@@ -4,8 +4,8 @@ import { join, relative } from "path";
 import { glob } from "glob";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { assertInProjectRoot } from "../security.js";
-import { logCall, logSuccess, logError } from "../logger.js";
+import { assertInProjectRoot } from "../../security/index.js";
+import { logCall, logSuccess, logError } from "../../logger/index.js";
 
 type Match = { file: string; line: number; content: string };
 

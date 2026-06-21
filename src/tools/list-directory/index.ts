@@ -2,8 +2,8 @@ import { readdir } from "fs/promises";
 import { join, relative } from "path";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { assertInProjectRoot } from "../security.js";
-import { logCall, logSuccess, logError } from "../logger.js";
+import { assertInProjectRoot } from "../../security/index.js";
+import { logCall, logSuccess, logError } from "../../logger/index.js";
 
 type Entry = { name: string; type: "file" | "dir"; path: string };
 

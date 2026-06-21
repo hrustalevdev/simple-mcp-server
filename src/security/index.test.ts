@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { assertInProjectRoot } from "./security.js";
+import { assertInProjectRoot } from "./index.js";
 import { mkdtempSync } from "fs";
 import { tmpdir } from "os";
 
